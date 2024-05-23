@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { AppState } from '../../app.reducer';
 import { filter, Subscription } from 'rxjs';
 import { IncomeRevenue } from '../../models/income-revenue.model';
+import { AppStateWithIncome } from '../income.revenue.reducer';
 
 @Component({
   selector: 'app-statistics',
@@ -16,7 +16,7 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   totalExpenses: number = 0;
   itemsSubs: Subscription;
 
-  constructor(private store: Store<AppState>) {}
+  constructor(private store: Store<AppStateWithIncome>) {}
 
   ngOnInit(): void {
     this.itemsSubs = this.store
