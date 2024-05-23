@@ -19,6 +19,7 @@ import { environment } from '../environment/environment';
 import { StoreModule } from '@ngrx/store';
 import { appReducers } from './app.reducer';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { SortItemsPipe } from './pipes/sort-items.pipe';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
     FooterComponent,
     NavbarComponent,
     SidebarComponent,
+    SortItemsPipe,
   ],
   imports: [
     BrowserModule,

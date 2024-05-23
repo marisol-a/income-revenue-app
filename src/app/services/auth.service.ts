@@ -6,25 +6,30 @@ import {
   authState,
 } from '@angular/fire/auth';
 import {
-  addDoc,
   collection,
   Firestore,
   Unsubscribe,
-  getDocs,
-  query,
-  where,
+  setDoc,
+  doc,
+  getDoc,
 } from '@angular/fire/firestore';
 import { map } from 'rxjs';
 import { User } from '../models/user.model';
 import { Store } from '@ngrx/store';
 import { AppState } from '../app.reducer';
 import * as authAction from '../auth/auth.actions';
+import * as incomeRevenueAction from '../income-revenue/income-revenue.actions';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   userUnsubscribe: Unsubscribe;
+  private _user: User;
+
+  get user() {
+    return this._user;
+  }
 
   constructor(
     private auth: Auth,
@@ -35,15 +40,19 @@ export class AuthService {
   initAuthListener() {
     return authState(this.auth).subscribe(async (fuser) => {
       if (fuser) {
-        const userRef = collection(this.firestore, 'user');
-        const userQuery = query(userRef, where('uid', '==', fuser.uid));
-        const querySnapshot = await getDocs(userQuery);
-        querySnapshot.forEach((doc) => {
-          this.store.dispatch(authAction.setUser({ user: doc.data() as User }));
-        });
+        const userRef = collection(this.firestore, `${fuser.uid}`);
+        const uidRef = doc(userRef, 'user');
+        const querySnapshot = await getDoc(uidRef);
+
+        this._user = { ...querySnapshot.data() } as User;
+        this.store.dispatch(
+          authAction.setUser({ user: { ...(querySnapshot.data() as User) } })
+        );
       } else {
+        this._user = null;
         this.userUnsubscribe ? this.userUnsubscribe() : null;
         this.store.dispatch(authAction.unsetUser());
+        this.store.dispatch(incomeRevenueAction.unsetItems());
       }
     });
   }
@@ -52,9 +61,10 @@ export class AuthService {
     return createUserWithEmailAndPassword(this.auth, email, password).then(
       (fuser) => {
         const newUser = new User(fuser.user.uid, user, email);
-        const userRef = collection(this.firestore, 'user');
+        const userRef = collection(this.firestore, `${fuser.user.uid}`);
+        const uidRef = doc(userRef);
 
-        return addDoc(userRef, { ...newUser });
+        return setDoc(uidRef, { ...newUser });
       }
     );
   }
